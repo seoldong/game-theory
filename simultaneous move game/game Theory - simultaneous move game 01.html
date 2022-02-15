@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+
+<style media="screen">
+
+#project_title {
+  width: 900px;
+  margin: 50px;
+  text-align: center;
+}
+
+#getpn_input_info {
+  margin: 25px 50px 25px 50px;
+}
+
+#players_num {
+  justify-content: space-between;
+  display: flex;
+  margin: 25px 50px 25px 50px;
+  height: 40px;
+}
+
+#getpn {
+  width: 200px;
+  margin-right: 80px;
+  padding-left: 10px;
+}
+
+#enterpn {
+  width: 405px;
+  margin-right: 12px;
+  padding: 0;
+}
+
+
+
+</style>
+</head>
+
+<body style="width: 1000px">
+
+<div id="project_title">
+
+<br>project-title : Game theory - Simultaneous-move game
+<br>
+<br>게임이론 순차게임 계산기
+
+</div>
+
+<div id="body_container" style="width: 1000px">
+
+  <div class="getpn_value" id="getpn_input_info">
+    <br>게임의 예시)
+    <br>
+    <br>역에서 파는 주간지 (주간A)와 (주간B)는 매주 한 가지씩 커다란 특집 기사를 싣고, 전철 광고판을 통패 대대적으로 광고를 하여 독자를 확보하고 있다.
+    <br>
+    <br>이번 주에는 주요 특집이 두 가지 있다. 한 가지는 "S 의원에게 새로운 의혹"이고, 다른 한 가지는 드디어 본격적으로 들려오는 "이번 달 금융 불안설은 현실화되는가. 파산할 금융 기관은 어디인가" 이다. 매주 특집 기사에 따라 어느 쪽이든 관심이 있는 주간지를 반드시 한 권은 사는 독자가 100만 명 있다고 추정되며, 두 주간지는 매주 독자를 두고 경쟁 중이다. 이러한 가운데 이번 주에는 70만 명이 "의원 의혹" 기사에 관심을 보이고 있고, 나머지 30만 명은 "금융 불안설"에 관심을 보이고 있다고 하자.
+    <br>
+    <br><span style='color: red'>만약 두 주간지가 다른 특집을 실으면 관심을 보이는 독자를 모두 획득할 수 있고, 같은 특집을 실으면 관심을 보이는 독자를 절반씩 획득할 수 있다고 치자.</span> 두 주간지는 같은 날에 발매되며, 광고도 동시에 내보내기 때문에 상대방의 특집을 알지 못한 상태에서 자신의 특집 기사를 정해야만 한다. 두 주간지는 어떤 특집을 실으면 좋을까?
+    <br>
+    <br>
+    <br>참여할 플레이어 수를 입력해주세요.
+  </div>
+
+  <div id="players_num" >
+    <input class="getpn_value" type="reset" id="resetall" value="전체 초기화" style="width: 100px";>
+    <input class="getpn_value" type="text" id="getpn" placeholder="숫자 값">
+    <input class="getpn_value" type="button" id="enterpn" value="경기자 숫자 입력 및 기본 값 초기화">
+  </div>
+  <div id='players_num_line'>
+    <hr style="margin: 20px"></hr>
+  </div>
+
+  <div id="contents_value" style="display:flex; margin: 25px; width: 950px" ></div>
+  <div id="print_value" style="display:flex; margin: 25px; width: 950px" ></div>
+
+</div>
+
+
+
+<script type="text/javascript">
+
+//set --------------------------------------------------------------------------
+const players_num = document.getElementById("players_num");
+const getpn_input_info = document.getElementById("getpn_input_info");
+const getpn = document.getElementById("getpn");
+const enterpn = document.getElementById('enterpn');
+const contents_value = document.getElementById('contents_value');
+
+let players = [];
+let strategies = [];
+let payoff = [];
+let strategiesovr = [];
+let payoffovr = [];
+
+
+
+//Reset All --------------------------------------------------------------------전체 리셋 버튼
+resetall.addEventListener('click',function(){
+
+  players.length = 0;
+  strategies.length = 0;
+  payoff.length = 0;
+  strategiesovr.length = 0;
+  payoffovr.length = 0;
+
+  getpn.value = null;
+
+  while ( contents_value.hasChildNodes() ) {
+    contents_value.removeChild( contents_value.firstChild );
+  }
+
+})
+
+
+
+//players_num -----------------------------------------------------------플레이어 숫자 입력 버튼 / 초기화
+enterpn.addEventListener('click',function(){
+
+  if( getpn.value == 0 ) {
+    while ( contents_value.hasChildNodes() ) {
+      contents_value.removeChild( contents_value.firstChild );
+    }
+
+    alert('no value');
+
+    } else {
+
+      while ( contents_value.hasChildNodes() ) {
+        contents_value.removeChild( contents_value.firstChild );
+    }
+
+
+//containers_value > base > calculations/print_value------------------------create
+    let base = document.createElement('div');
+        base.setAttribute('id','base');
+        base.setAttribute('style', 'width: 400px');
+        base.setAttribute('style', 'padding: 20px 25px 20px 25px');
+
+
+    let calculations = document.createElement('div');
+        calculations.setAttribute('id','calculations');
+        calculations.setAttribute('style', 'width: 400px');
+        calculations.setAttribute('style', 'padding: 20px 25px 20px 25px');
+
+
+        contents_value.appendChild(base);
+        contents_value.appendChild(calculations);
+
+
+
+//base > player_name_info_container---------------------------------------create
+    let player_name_info_container = document.createElement("div");
+        player_name_info_container.setAttribute('class','base_value');
+        player_name_info_container.setAttribute('id','player_name_info_container');
+        player_name_info_container.setAttribute('style','margin: 20px 0px 20px 0px');
+        player_name_info_container.setAttribute('style','width: 425px');
+
+
+    let pn_info_container = document.createElement("div");
+        pn_info_container.setAttribute('class','pn_info_base_value');
+        pn_info_container.setAttribute('id','pn_info_container');
+
+    let pn_info = document.createTextNode('*각 플레이어의 이름을 입력해주세요.');
+
+    base.appendChild( player_name_info_container );
+        player_name_info_container.appendChild( pn_info_container );
+        pn_info_container.appendChild( pn_info );
+
+
+
+    //base > pn_container ----------------------------------------------------create
+    let pn_container = document.createElement("div");
+        pn_container.setAttribute('class','base_value');
+        pn_container.setAttribute('id','pn_container');
+        pn_container.setAttribute('style','pn_container');
+
+    let pn_input_info_container = document.createElement("div");
+        pn_input_info_container.setAttribute('class','pn_base_value');
+        pn_input_info_container.setAttribute('id','pn_input_info_container');
+
+    let pn_input_text_container = document.createElement("div");
+        pn_input_text_container.setAttribute('class','pn_base_value');
+        pn_input_text_container.setAttribute('id','pn_input_text_container');
+
+        base.appendChild( pn_container );
+
+
+
+    //base > pn_input_info----------------------------------------------------create
+    for(let i=0; i<getpn.value; i++){
+      let pn_input_info = document.createTextNode("플레이어 "+(i+1)+"의 이름 : ");
+
+      let pn_input_info_p = document.createElement('span');
+          pn_input_info_p.setAttribute('class','pn_input_info_p');
+
+      let pn_input_text = document.createElement("input");
+          pn_input_text.setAttribute('type','text');
+          pn_input_text.setAttribute('class','pn');
+          pn_input_text.setAttribute('id','pn'+i);
+          pn_input_text.setAttribute('placeholder','자유로운 값');
+          pn_input_text.setAttribute('style','padding: 2px 24px 2px 10px');
+
+      let pn_contents_box = document.createElement("div");
+          pn_contents_box.setAttribute('style','margin: 10px 2px 10px 2px');
+
+          pn_container.appendChild( pn_contents_box );
+          pn_contents_box.appendChild( pn_input_info_p );
+          pn_input_info_p.appendChild( pn_input_info );
+
+          pn_contents_box.appendChild( pn_input_text );
+    }
+
+
+
+    //base > strategies_payoff_info_container--------------------------create&append
+      let strategies_payoff_info_container = document.createElement("div");
+          strategies_payoff_info_container.setAttribute('class','base_value');
+          strategies_payoff_info_container.setAttribute('id','strategies_payoff_info_container');
+          strategies_payoff_info_container.setAttribute('style','margin: 60px 0px 20px 0px');
+
+      let str_po_info_container = document.createElement("div");
+          str_po_info_container.setAttribute('class','pn_info_base_value');
+          str_po_info_container.setAttribute('id','str_po_info_container');
+
+      let str_po_info = document.createTextNode('*각각의 전략과 보상을 입력해주세요.');
+
+          base.appendChild( strategies_payoff_info_container );
+          strategies_payoff_info_container.appendChild( str_po_info_container );
+          str_po_info_container.appendChild( str_po_info );
+
+
+
+    //base > str_container---------------------------------------------create&append
+      let str_container = document.createElement("div");
+          str_container.setAttribute('class','base_value');
+          str_container.setAttribute('id','str_container');
+          str_container.setAttribute('style','margin: 10px 0px 10px 0px');
+
+
+      let str_input_info_container = document.createElement("div");
+          str_input_info_container.setAttribute('class','str_base_value');
+          str_input_info_container.setAttribute('id','str_input_info_container');
+
+      let str_input_text_container = document.createElement("div");
+          str_input_text_container.setAttribute('class','str_base_value');
+          str_input_text_container.setAttribute('id','str_input_text_container');
+
+          base.appendChild( str_container );
+
+
+
+    //base > str_input_info-------------------------------------create&append(input)
+      for(let i=0; i<getpn.value; i++){
+        let str_input_info = document.createTextNode("전략 "+(i+1)+" : ");
+
+        let str_input_info_p = document.createElement('span');
+            str_input_info_p.setAttribute('class','str_input_info_p');
+
+        let str_input_text = document.createElement("input");
+            str_input_text.setAttribute('type','text');
+            str_input_text.setAttribute('class','str');
+            str_input_text.setAttribute('id','str'+i);
+            str_input_text.setAttribute('placeholder','자유로운 값');
+            str_input_text.setAttribute('style','padding: 2px 106px 2px 10px');
+
+        let str_contents_box = document.createElement("div");
+            str_contents_box.setAttribute('style','margin: 10px 0px 10px 0px');
+
+
+            str_container.appendChild( str_contents_box );
+            str_contents_box.appendChild( str_input_info_p );
+            str_input_info_p.appendChild( str_input_info );
+
+            str_contents_box.appendChild( str_input_text );
+      }
+
+
+
+    //base > po_container----------------------------------------------create&append
+      let po_container = document.createElement("div");
+          po_container.setAttribute('class','base_value');
+          po_container.setAttribute('id','po_container');
+          po_container.setAttribute('style','margin: 10px 0px 10px 0px');
+
+
+      let po_input_info_container = document.createElement("div");
+          po_input_info_container.setAttribute('class','po_base_value');
+          po_input_info_container.setAttribute('id','po_input_info_container');
+
+      let po_input_text_container = document.createElement("div");
+          po_input_text_container.setAttribute('class','po_base_value');
+          po_input_text_container.setAttribute('id','po_input_text_container');
+
+          base.appendChild( po_container );
+
+
+
+    //base > po_input_info--------------------------------------create&append(input)
+      for(let i=0; i<getpn.value; i++){
+      let po_input_info = document.createTextNode("보상 "+(i+1)+" : ");
+
+      let po_input_info_p = document.createElement('span');
+          po_input_info_p.setAttribute('class','po_input_info_p');
+
+      let po_input_text = document.createElement("input");
+          po_input_text.setAttribute('type','text');
+          po_input_text.setAttribute('class','po');
+          po_input_text.setAttribute('id','po'+i);
+          po_input_text.setAttribute('placeholder','숫자 값');
+          po_input_text.setAttribute('style','padding: 2px 106px 2px 10px');
+
+      let po_contents_box = document.createElement("div");
+          po_contents_box.setAttribute('style','margin: 10px 0px 10px 0px');
+
+          po_container.appendChild( po_contents_box );
+          po_contents_box.appendChild( po_input_info_p );
+          po_input_info_p.appendChild( po_input_info );
+          po_contents_box.appendChild( po_input_text );
+      }
+
+
+
+    //base > playersnum_strategies_payoff_button_container ---------------------------------기본 값 입력 버튼
+    let playersnum_strategies_payoff_button_container = document.createElement("div");
+        playersnum_strategies_payoff_button_container.setAttribute('class','base_value');
+        playersnum_strategies_payoff_button_container.setAttribute('id','playersnum_strategies_payoff_button_container');
+        playersnum_strategies_payoff_button_container.setAttribute('style','margin: 20px 0px 20px 0px');
+
+
+    let pn_str_po_button_container = document.createElement("div");
+        pn_str_po_button_container.setAttribute('class','pn_button_base_value');
+        pn_str_po_button_container.setAttribute('id','pn_str_po_button_container');
+
+    let pn_str_po_input_button = document.createElement("input");
+        pn_str_po_input_button.setAttribute('type','button');
+        pn_str_po_input_button.setAttribute('class','pn_str_po_button');
+        pn_str_po_input_button.setAttribute('id','pn_str_po_input_button');
+        pn_str_po_input_button.setAttribute('value','기본 값 입력 및 계산');
+        pn_str_po_input_button.setAttribute('style','height: 40px; width: 200px;');
+
+        base.appendChild( playersnum_strategies_payoff_button_container );
+        playersnum_strategies_payoff_button_container.appendChild( pn_str_po_button_container );
+        pn_str_po_button_container.appendChild( pn_str_po_input_button );
+
+
+
+    //base > calculations_reset_container ------------------------------------------------기본 값 초기화 버튼
+    let calculations_reset_container = document.createElement('div');
+        calculations_reset_container.setAttribute('id','calcul_reset');
+        calculations_reset_container.setAttribute('style','margin: 20px 0px 20px 0px');
+
+
+    let calculations_reset = document.createElement('input');
+        calculations_reset.setAttribute('type','reset');
+        calculations_reset.setAttribute('id','calculations_reset');
+        calculations_reset.setAttribute('value','계산 초기화')
+        calculations_reset.setAttribute('style','height: 40px; width: 200px;');
+
+
+        base.appendChild( calculations_reset_container );
+        calculations_reset_container.appendChild( calculations_reset );
+
+
+
+    //base > value reset---------------------------------------------------------------기본 값 입력 버튼 실행
+    pn_str_po_input_button.onclick = function(event){
+
+      let pn = document.getElementsByClassName('pn').value;
+      let str = document.getElementsByClassName('str').value;
+      let po = document.getElementsByClassName('po').value;
+
+      if ( pn0.value == 0 || str0.value == 0 || po0.value == 0 ) {
+        alert('no value')
+          } else {
+
+        players.length = 0;
+        strategies.length = 0;
+        payoff.length = 0;
+        strategiesovr.length = 0;
+        payoffovr.length = 0;
+
+        while ( calculations.hasChildNodes() ) {
+          calculations.removeChild( calculations.firstChild );
+        }
+        while ( print_value.hasChildNodes() ) {
+          print_value.removeChild( print_value.firstChild );
+        }
+
+
+        //base > push arr-------------------------------------------------------push arr
+        for (let i=0; i<getpn.value; i++) {
+          let pnv = document.getElementById('pn'+i).value;
+          let strv = document.getElementById('str'+i).value;
+          let pov = document.getElementById('po'+i).value;
+
+          players.push(pnv);
+          strategies.push(strv);
+          payoff.push(pov);
+        }
+
+
+
+        // calculations ----------------------------------------------------------------
+        // calculations > Execute-------------------------------------------------------
+        let nocrule = rule(strategies,payoff)
+        let nocsp = permutation( strategies , players.length )
+        let nocovr = overlap(nocsp);
+        let nocmark = crossnoc(nocsp,nocovr);
+        let nocml = nocmarklength(nocmark);
+        let nocpay = applypay(nocmark,strategies,payoff,nocml);
+        let rnp = roundoffnocpay(nocpay);
+        let complete = sumstrpay(nocsp,rnp)
+        let par = playerArnage(complete)
+        let ds = playerAfominantstrategy( par , strategies );
+
+
+        //calculations-----------------------------------nocsp_container > create&append
+        let nocsp_container = document.createElement('div');
+            nocsp_container.setAttribute('id','nocsp_container');
+            nocsp_container.setAttribute('style','margin: 10px');
+
+        let nocsp_input_button = document.createElement("input");
+            nocsp_input_button.setAttribute('type','button');
+            nocsp_input_button.setAttribute('id','nocsp_input_button');
+            nocsp_input_button.setAttribute('value','경우의 수');
+            nocsp_input_button.setAttribute('style','margin: 10px');
+            nocsp_input_button.setAttribute('style','width: 405px');
+
+        let nocsp_p = document.createElement('p');
+            nocsp_p.setAttribute('id','nocsp_p');
+
+        //calculations----------------------------------nocovr_container > create&append
+        let nocovr_container = document.createElement('div');
+            nocovr_container.setAttribute('id','nocovr_container');
+            nocovr_container.setAttribute('style','margin: 10px');
+
+        let nocovr_input_button = document.createElement("input");
+            nocovr_input_button.setAttribute('type','button');
+            nocovr_input_button.setAttribute('id','nocovr_input_button');
+            nocovr_input_button.setAttribute('value','중복 값');
+            nocovr_input_button.setAttribute('style','margin: 10px');
+            nocovr_input_button.setAttribute('style','width: 405px');
+
+
+        let nocovr_p = document.createElement('p');
+            nocovr_p.setAttribute('id','nocovr_p');
+
+
+        //calculations---------------------------------nocmark_container > create&append
+        let nocmark_container = document.createElement('div');
+            nocmark_container.setAttribute('id','nocmark_container');
+            nocmark_container.setAttribute('style','margin: 10px');
+
+        let nocmark_input_button = document.createElement("input");
+            nocmark_input_button.setAttribute('type','button');
+            nocmark_input_button.setAttribute('id','nocmark_input_button');
+            nocmark_input_button.setAttribute('value','중복 값 표시');
+            nocmark_input_button.setAttribute('style','margin: 10px');
+            nocmark_input_button.setAttribute('style','width: 405px');
+
+
+        let nocmark_p = document.createElement('p');
+            nocmark_p.setAttribute('id','nocmark_p');
+
+
+        //calculations-----------------------------------nocml_container > create&append
+        let nocml_container = document.createElement('div');
+            nocml_container.setAttribute('id','nocml_container');
+            nocml_container.setAttribute('style','margin: 10px');
+
+        let nocml_input_button = document.createElement("input");
+            nocml_input_button.setAttribute('type','button');
+            nocml_input_button.setAttribute('id','nocml_input_button');
+            nocml_input_button.setAttribute('value','중복 값 개수');
+            nocml_input_button.setAttribute('style','margin: 10px');
+            nocml_input_button.setAttribute('style','width: 405px');
+
+
+        let nocml_p = document.createElement('p');
+            nocml_p.setAttribute('id','nocml_p');
+
+
+        //calculations----------------------------------nocpay_container > create&append
+        let nocpay_container = document.createElement('div');
+            nocpay_container.setAttribute('id','nocpay_container');
+            nocpay_container.setAttribute('style','margin: 10px');
+
+        let nocpay_input_button = document.createElement("input");
+            nocpay_input_button.setAttribute('type','button');
+            nocpay_input_button.setAttribute('id','nocpay_input_button');
+            nocpay_input_button.setAttribute('value','경우의 수 보상');
+            nocpay_input_button.setAttribute('style','margin: 10px');
+            nocpay_input_button.setAttribute('style','width: 405px');
+
+
+        let nocpay_p = document.createElement('p');
+            nocpay_p.setAttribute('id','nocpay_p');
+
+
+        //calculations-------------------------------------rnp_container > create&append
+        let rnp_container = document.createElement('div');
+            rnp_container.setAttribute('id','rnp_container');
+            rnp_container.setAttribute('style','margin: 10px');
+
+        let rnp_input_button = document.createElement("input");
+            rnp_input_button.setAttribute('type','button');
+            rnp_input_button.setAttribute('id','rnp_input_button');
+            rnp_input_button.setAttribute('value','소수점 반올림');
+            rnp_input_button.setAttribute('style','margin: 10px');
+            rnp_input_button.setAttribute('style','width: 405px');
+
+
+        let rnp_p = document.createElement('p');
+            rnp_p.setAttribute('id','rnp_p');
+
+
+        //calculations--------------------------------complete_container > create&append
+        let complete_container = document.createElement('div');
+            complete_container.setAttribute('id','complete_container');
+            complete_container.setAttribute('style','margin: 10px');
+
+
+        let complete_input_button = document.createElement("input");
+            complete_input_button.setAttribute('type','button');
+            complete_input_button.setAttribute('id','complete_input_button');
+            complete_input_button.setAttribute('value','경우의 (보상포함)');
+            complete_input_button.setAttribute('style','width: 405px; height: 30px');
+
+
+        let complete_p = document.createElement('p');
+            complete_p.setAttribute('id','complete_p');
+
+
+        //calculations-------------------------------------par_container > create&append
+        let par_container = document.createElement('div');
+            par_container.setAttribute('id','par_container');
+            par_container.setAttribute('style','margin: 10px');
+
+        let par_input_button = document.createElement("input");
+            par_input_button.setAttribute('type','button');
+            par_input_button.setAttribute('id','par_input_button');
+            par_input_button.setAttribute('value','정렬');
+            par_input_button.setAttribute('style','margin: 10px');
+            par_input_button.setAttribute('style','width: 405px');
+
+
+        let par_p = document.createElement('p');
+            par_p.setAttribute('id','par_p');
+
+
+        //calculations--------------------------------------ds_container > create&append
+        let ds_container = document.createElement('div');
+            ds_container.setAttribute('id','ds_container');
+            ds_container.setAttribute('style','margin: 10px');
+
+        let ds_input_button = document.createElement("input");
+            ds_input_button.setAttribute('type','button');
+            ds_input_button.setAttribute('id','ds_input_button');
+            ds_input_button.setAttribute('value','지배 전략');
+            ds_input_button.setAttribute('style','margin: 10px');
+            ds_input_button.setAttribute('style','width: 405px');
+            ds_input_button.setAttribute('style','width: 405px; height: 30px');
+
+        let ds_p = document.createElement('p');
+            ds_p.setAttribute('id','ds_p');
+
+
+        //calculations--------------------------------------container-line > create&append
+        let line_container = document.createElement('div');
+            line_container.setAttribute('id','line_container');
+            line_container.setAttribute('style','margin: 10px');
+
+        let hr_line = document.createElement("hr");
+            hr_line.setAttribute('id','hr_line');
+            hr_line.setAttribute('style','margin: 40px');
+
+
+        //calculations--------------------------------------
+        calculations.appendChild(complete_container);
+        complete_container.appendChild(complete_input_button);
+
+        calculations.appendChild(ds_container);
+        ds_container.appendChild(ds_input_button);
+
+        calculations.appendChild(line_container);
+        line_container.appendChild(hr_line);
+
+        calculations.appendChild(nocsp_container);
+        nocsp_container.appendChild(nocsp_input_button);
+
+        calculations.appendChild(nocovr_container);
+        nocovr_container.appendChild(nocovr_input_button);
+
+        calculations.appendChild(nocovr_container);
+        nocovr_container.appendChild(nocovr_input_button);
+
+        calculations.appendChild(nocmark_container);
+        nocmark_container.appendChild(nocmark_input_button);
+
+        calculations.appendChild(nocml_container);
+        nocml_container.appendChild(nocml_input_button);
+
+        calculations.appendChild(nocpay_container);
+        nocpay_container.appendChild(nocpay_input_button);
+
+        calculations.appendChild(rnp_container);
+        rnp_container.appendChild(rnp_input_button);
+
+        calculations.appendChild(par_container);
+        par_container.appendChild(par_input_button);
+
+
+
+
+
+        //print_value-------------------------------print_base_container > create&append
+        let print_base_container = document.createElement('div');
+            print_base_container.setAttribute('id','print_base_container');
+            print_base_container.setAttribute('style','padding: 20px 25px 20px 25px');
+
+        let print_base_pn_container = document.createElement('div');
+            print_base_pn_container.setAttribute('id','print_base_pn_container');
+            print_base_pn_container.setAttribute('style','margin: 20px 0px 20px 0px; width: 425px');
+
+        let print_base_str_container = document.createElement('span');
+            print_base_str_container.setAttribute('id','print_base_str_container');
+            print_base_str_container.setAttribute('style','display: inline-block;');
+
+        let print_base_po_container = document.createElement('span');
+            print_base_po_container.setAttribute('id','print_base_po_container');
+            print_base_po_container.setAttribute('style','display: inline-block; ');
+
+            print_value.appendChild( print_base_container );
+            print_base_container.appendChild( print_base_pn_container );
+            print_base_container.appendChild( print_base_str_container );
+            print_base_container.appendChild( print_base_po_container );
+
+
+        //print_value---------------------------------print_base_pn_info > create&append
+        let print_base_info = document.createElement('div');
+        let print_base_value = document.createTextNode('*현재 기본 설정 값');
+            print_base_info.setAttribute('style','margin: 0px 50px 50px 0px;')
+
+            print_base_pn_container.appendChild( print_base_info );
+            print_base_info.appendChild( print_base_value );
+
+        let print_base_pn_info = document.createElement('div');
+        let print_base_pn_value = document.createTextNode('플레이어 : '+players);
+            print_base_pn_info.setAttribute('style','margin: 0px 0px 10px 0px;')
+
+            print_base_pn_container.appendChild( print_base_pn_info );
+            print_base_pn_info.appendChild( print_base_pn_value );
+
+        for(let i=0; i<getpn.value; i++){
+        let print_base_str_info = document.createElement('div');
+        let print_base_str_value = document.createTextNode(' 전략 (' +strategies[i]+') : ');
+            print_base_str_info.setAttribute('style','margin: 10px 10px 10px 0px;')
+
+            print_base_str_container.appendChild( print_base_str_info );
+            print_base_str_info.appendChild( print_base_str_value );
+
+        let print_base_po_info = document.createElement('div');
+        let print_base_po_value = document.createTextNode(' 보상 (' +payoff[i]+') ');
+            print_base_po_info.setAttribute('style','margin: 10px 10px 10px 0px;')
+
+            print_base_po_container.appendChild( print_base_po_info );
+            print_base_po_info.appendChild( print_base_po_value );
+        }
+
+
+        //print_value-----------------------print_calculations_container > create&append
+        let print_calculations_container = document.createElement('div');
+            print_calculations_container.setAttribute('id','print_calculations_container');
+            print_calculations_container.setAttribute('style','padding: 20px 25px 20px 25px');
+
+        let box_info = document.createElement('div');
+            box_info_text = document.createTextNode('*계산 결과');
+            box_info.setAttribute('id','box_info_text');
+            // box_info.setAttribute('style','margin: 10px; width: 405px');
+            print_calculations_container.appendChild(box_info);
+            box_info.appendChild(box_info_text);
+
+
+
+        let box_p = document.createElement('div');
+            box_p.setAttribute('id','box_p');
+            box_p.setAttribute('style','margin: 10px; width: 405px');
+
+            print_value.appendChild(print_calculations_container);
+            print_calculations_container.appendChild(box_info);
+            print_calculations_container.appendChild(box_p);
+
+
+        //print_value------------------------------------------------------nocsp > print_value
+        nocsp_input_button.addEventListener('click', function() {
+          while (box_p.hasChildNodes()) {
+            box_p.removeChild(box_p.lastChild);
+          }
+
+          for (let i=0; i<nocsp.length; i++){
+            let nocsp_create_text = document.createTextNode(nocsp[i]);
+
+            box_p.appendChild(nocsp_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+
+
+        //print_value-----------------------------------------------------nocovr > print_value
+        nocovr_input_button.addEventListener('click', function(){
+          while (box_p.hasChildNodes()) {
+            box_p.removeChild(box_p.lastChild);
+          }
+
+          for (let i=0; i<nocovr.length; i++){
+            let nocovr_create_text = document.createTextNode(nocovr[i]);
+
+            box_p.appendChild(nocovr_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+
+
+        //print_value---------------------------------------------------nocovr > nocmark
+        nocmark_input_button.addEventListener('click', function(){
+          while (box_p.hasChildNodes()) {
+            box_p.removeChild(box_p.lastChild);
+          }
+
+          for (let i=0; i<nocmark.length; i++){
+            let nocmark_create_text = document.createTextNode(nocmark[i]);
+
+            box_p.appendChild(nocmark_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+
+
+        //print_value-----------------------------------------------------nocovr > nocml
+        nocml_input_button.addEventListener('click', function(){
+          while (box_p.hasChildNodes()) {
+            box_p.removeChild(box_p.lastChild);
+          }
+
+          for (let i=0; i<nocml.length; i++){
+            let nocml_create_text = document.createTextNode(nocml[i]);
+
+            box_p.appendChild(nocml_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+
+
+        //print_value----------------------------------------------------nocovr > nocpay
+        nocpay_input_button.addEventListener('click', function(){
+          while (box_p.hasChildNodes()) {
+            box_p.removeChild(box_p.lastChild);
+          }
+
+          for (let i=0; i<nocpay.length; i++){
+            let nocpay_create_text = document.createTextNode(nocpay[i]);
+
+            box_p.appendChild(nocpay_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+
+
+        //print_value-------------------------------------------------------nocovr > rnp
+        rnp_input_button.addEventListener('click', function(){
+          while (box_p.hasChildNodes()) {
+              box_p.removeChild(box_p.lastChild);
+            }
+
+          for (let i=0; i<rnp.length; i++){
+            let rnp_create_text = document.createTextNode(rnp[i]);
+
+            box_p.appendChild(rnp_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+
+
+        //print_value--------------------------------------------------nocovr > complete
+        complete_input_button.addEventListener('click', function(){
+          while (box_p.hasChildNodes()) {
+            box_p.removeChild(box_p.lastChild);
+          }
+
+          for (let i=0; i<complete.length; i++){
+            let complete_create_text = document.createTextNode(complete[i]);
+
+            box_p.appendChild(complete_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+
+
+        //print_value-------------------------------------------------------nocovr > par
+        par_input_button.addEventListener('click', function(){
+          while (box_p.hasChildNodes()) {
+            box_p.removeChild(box_p.lastChild);
+          }
+
+          for (let i=0; i<par.length; i++){
+            let par_create_text = document.createTextNode(par[i]);
+
+            box_p.appendChild(par_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+
+
+        //print_value--------------------------------------------------------nocovr > ds
+        ds_input_button.addEventListener('click', function(){
+          while (box_p.hasChildNodes()) {
+            box_p.removeChild(box_p.lastChild);
+          }
+
+          for (let i=0; i<ds.length; i++){
+            let ds_create_text = document.createTextNode(ds[i]);
+
+            box_p.appendChild(ds_create_text);
+            box_p.appendChild(document.createElement('br'));
+          }
+        })
+      }
+
+      //contents_value > base > calculations_reset_container -----------------------기본 값 초기화 버튼 실행
+      calculations_reset.onclick = function(event){
+
+      // base > calculations reset----------------------------------------------------
+      players.length = 0;
+      strategies.length = 0;
+      payoff.length = 0;
+      strategiesovr.length = 0;
+      payoffovr.length = 0;
+
+      while ( calculations.hasChildNodes() ) {
+      calculations.removeChild( calculations.firstChild );
+      }
+      }
+    }
+  }
+})
+
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+
+//중복값
+function rule(strategies,payoff){
+for(let i=0; i<strategies.length; i++){
+strategiesovr.push(strategies[i]+'*');
+payoffovr.push(payoff[i]/2);
+}
+}
+// const nocrule = rule(strategies,payoff)
+
+
+//전략 조합
+function permutation( strategies, n ){
+  let results = [];
+  if(n==1) return strategies.map(v=>[v]);
+
+  for(let i=0; i<strategies.length; i++){
+    let fix = strategies[i];
+    let permu = permutation(strategies,n-1);
+    let att = permu.map(v=>[fix,...v]);
+    results.push(...att);
+  }
+  return results;
+}
+// const nocsp = permutation( strategies , players.length );
+
+
+
+
+
+//중복원소 추출
+function overlap(nocsp){
+  let results = [];
+
+  for(let i=0; i<nocsp.length; i++){
+    let nspi = nocsp[i];
+    let elearr = [];
+
+    nspi.forEach(function (ele, idx, arr) {
+    let sarr = arr.slice(idx+1)
+      for(let j=0; j<sarr.length; j++){
+        if(ele == sarr[j]) {
+          elearr.push(ele);
+        }
+      }
+    })
+
+    let nele = new Set(elearr);
+    let sele = [...nele];
+    results.push(sele);
+  }
+
+  return results;
+}
+// const nocovr = overlap(nocsp);
+
+
+
+
+
+//중복원소 마크
+function crossnoc(nocsp,nocovr){
+  let narr = JSON.parse(JSON.stringify(nocsp));
+
+  for(let i=0; i<nocsp.length; i++){
+    let nai = narr[i];
+    let noi = nocovr[i];
+
+    nai.forEach(function(ele,idx,arr){
+      for(let j=0; j<arr.length; j++){
+        if(ele==noi[j]){
+          nai.splice(idx,1,ele+'*');
+        }
+      }
+    })
+  }
+  return narr;
+}
+// const nocmark = crossnoc(nocsp,nocovr);
+
+
+
+
+
+//중복원소 개수 찾기
+function nocmarklength(nocmark){
+let results = [];
+
+while (strategiesovr.lenegth > 0) {
+strategiesovr.pop();
+};
+
+for(let i=0; i<nocmark.length; i++){
+let nmi = nocmark[i];
+let nml = [];
+
+for(let j=0; j<nmi.length; j++){
+let nmf = nmi.filter(ele => ele == strategiesovr[j]).length;
+nml.push(nmf);
+}
+results.push(nml);
+}
+return results;
+} //중복 원소 개수
+// const nocml = nocmarklength(nocmark);
+
+
+
+
+
+//보상 및 룰 적용
+function applypay(nocmark,strategies,payoff,nocml){
+let nm = JSON.parse(JSON.stringify(nocmark));
+
+for(let i=0; i<nm.length; i++){
+let nmi = nm[i];
+let nmli = nocml[i]
+
+nmi.forEach(function(ele,idx,arr){
+
+for(let j=0; j<arr.length; j++){
+if (ele == strategies[j]) { nmi.splice(idx,1,payoff[j]) }
+
+else if(ele == strategiesovr[j]) {
+let division = nmli[j]
+nmi.splice(idx,1, payoff[j] / division );
+}
+}
+})
+}
+return nm;
+}
+// const nocpay = applypay(nocmark,strategies,payoff,nocml);
+
+
+
+
+
+//소수점 제거
+function roundoffnocpay(nocpay){
+let np = JSON.parse(JSON.stringify(nocpay));
+
+for(let i=0; i<np.length; i++){
+let npi = np[i];
+
+npi.forEach(function(ele,idx,arr){
+npi.splice(idx,1,Math.round(ele))
+})
+}
+return np;
+}
+// const rnp = roundoffnocpay(nocpay);
+
+
+
+
+
+//전략보상표
+function sumstrpay(nocsp,rnp){
+let nsp = JSON.parse(JSON.stringify(nocsp));
+let rnparr = JSON.parse(JSON.stringify(rnp));
+
+let results = [];
+
+for(let i=0; i<nocsp.length; i++){
+let nspi = nsp[i]
+let rnparri = rnparr[i]
+let sumsp = [];
+
+for(let j=0; j<nspi.length; j++){
+let sum = nspi[j] + ':' + rnparri[j];
+sumsp.push(sum)
+}
+results.push(sumsp)
+}
+return results;
+}
+// const complete = sumstrpay(nocsp,rnp)
+
+
+
+
+//player A 오름차순
+function playerArnage(player){
+let pa = JSON.parse(JSON.stringify(player));
+
+pa.sort(function(a,b){
+let range1 = (b[0].replace(/[^0-9]/g, ''))
+let range2 = (a[0].replace(/[^0-9]/g, ''))
+
+return range1 - range2;
+})
+return pa;
+}
+// const par = playerArnage(complete)
+
+
+
+
+
+//player A 지배전략
+function playerAfominantstrategy( par , strategies ) {
+let paarr = JSON.parse(JSON.stringify(par));
+let bsl = paarr.length / strategies.length;
+
+let results = [];
+let sarr = [];
+
+for(let i=0; i<bsl; i++) {
+let paarri = paarr[i];
+let select = paarri[0].replace(/[0-9,:]/gi, '');
+sarr.push(select);
+}
+
+let samecheck = sarr.every( v => v == sarr[0])
+if(samecheck) {
+results.push(sarr[0])
+};
+
+return results;
+}
+// let ds = playerAfominantstrategy( par , strategies );
+
+
+
+</script>
+
+
+  </body>
+</html>
